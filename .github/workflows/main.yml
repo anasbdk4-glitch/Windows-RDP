@@ -6,17 +6,17 @@ jobs:
   build:
     runs-on: windows-latest
     steps:
-    - name: Install Ngrok
+    - name: Download & Install Ngrok
       run: |
         Invoke-WebRequest -Uri https://bin.equinox.io/c/bNyj1mQVY4c/ngrok-stable-windows-amd64.zip -OutFile ngrok.zip
-        Expand-Archive ngrok.zip -DestinationPath $env:USERPROFILE
-        $env:Path += ";$env:USERPROFILE\ngrok"
-        ngrok config add-authtoken 32hSmz9tqgIwusnPoo4nEgXagHj_2hE1tfShbi7vG3f1cfihQ
+        Expand-Archive ngrok.zip -DestinationPath $env:USERPROFILE\ngrok
+        cd $env:USERPROFILE\ngrok
+        .\ngrok.exe config add-authtoken 32hSmz9tqgIwusnPoo4nEgXagHj_2hE1tfShbi7vG3f1cfihQ
     - name: Enable RDP
       run: |
         Set-ItemProperty -Path "HKLM:\System\CurrentControlSet\Control\Terminal Server" -Name "fDenyTSConnections" -Value 0
         Enable-NetFirewallRule -DisplayGroup "Remote Desktop"
         net user runneradmin 123456
-        Start-Process ngrok -ArgumentList "tcp 3389"
-        Start-Sleep -Seconds 30
+        Start-Process $env:USERPROFILE\ngrok\ngrok.exe -ArgumentList "tcp 3389"
+        Start-Sleep -Seconds 20
         Invoke-RestMethod http://127.0.0.1:4040/api/tunnels | ConvertTo-Json -Depth 10
